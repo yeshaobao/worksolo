@@ -1,0 +1,134 @@
+<Page
+    x:Class="WorkClosure.Pages.SummaryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:WorkClosure.Controls"
+    xmlns:model="using:WorkClosure.Models">
+    <ScrollViewer>
+        <StackPanel Padding="20" Spacing="20">
+            <StackPanel Spacing="6">
+                <TextBlock Text="总结复盘" Style="{StaticResource PageTitleTextStyle}" />
+                <TextBlock Text="从时间和项目两个维度查看新增、完成、未闭环和逾期情况，帮助你持续复盘工作节奏。" Style="{StaticResource CaptionTextStyle}" />
+            </StackPanel>
+
+            <Border Style="{StaticResource SurfacePanelStyle}">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <ComboBox
+                        Width="180"
+                        Header="统计周期"
+                        DisplayMemberPath="Label"
+                        ItemsSource="{Binding PeriodOptions}"
+                        SelectedValuePath="Value"
+                        SelectedValue="{Binding SelectedPeriod, Mode=TwoWay}" />
+                    <Button VerticalAlignment="Bottom" Content="上一周期" Command="{Binding PreviousPeriodCommand}" />
+                    <Button VerticalAlignment="Bottom" Content="下一周期" Command="{Binding NextPeriodCommand}" />
+                    <TextBlock VerticalAlignment="Bottom" Text="{Binding RangeTitle}" Style="{StaticResource SectionTitleTextStyle}" />
+                </StackPanel>
+            </Border>
+
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <controls:StatCard Grid.Column="0" Title="新增事项" Value="{Binding CreatedCount}" Subtitle="所选周期内新建的事项数量" />
+                <controls:StatCard Grid.Column="1" Title="完成事项" Value="{Binding CompletedCount}" Subtitle="所选周期内已闭环完成的事项" />
+                <controls:StatCard Grid.Column="2" Title="当前未闭环" Value="{Binding OpenCount}" Subtitle="当前仍在推进中的事项数量" />
+                <controls:StatCard Grid.Column="3" Title="当前已逾期" Value="{Binding OverdueCount}" Subtitle="当前开放事项中已逾期的数量" />
+            </Grid>
+
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource SurfacePanelStyle}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="项目快照" Style="{StaticResource SectionTitleTextStyle}" />
+                        <ListView ItemsSource="{Binding ProjectSummaries}">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="model:ProjectProgressSummary">
+                                    <Border Style="{StaticResource SurfacePanelCompactStyle}" Margin="0,0,0,10">
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="{Binding ProjectName}" FontWeight="SemiBold" />
+                                            <TextBlock Style="{StaticResource CaptionTextStyle}">
+                                                <Run Text="总数：" />
+                                                <Run Text="{Binding Total}" />
+                                                <Run Text=" | 已完成：" />
+                                                <Run Text="{Binding Completed}" />
+                                                <Run Text=" | 未闭环：" />
+                                                <Run Text="{Binding Open}" />
+                                                <Run Text=" | 已逾期：" />
+                                                <Run Text="{Binding Overdue}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </Border>
+
+                <Grid Grid.Column="1" RowSpacing="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Style="{StaticResource SurfacePanelStyle}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="周期内完成清单" Style="{StaticResource SectionTitleTextStyle}" />
+                            <ListView ItemsSource="{Binding CompletedTasks}" MaxHeight="280">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="model:WorkTaskItem">
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                            <TextBlock Grid.Row="1" Style="{StaticResource CaptionTextStyle}">
+                                                <Run Text="{Binding ProjectName}" />
+                                                <Run Text=" | " />
+                                                <Run Text="{Binding CompletedText}" />
+                                            </TextBlock>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Style="{StaticResource SurfacePanelStyle}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="待继续跟进" Style="{StaticResource SectionTitleTextStyle}" />
+                            <ListView ItemsSource="{Binding OpenTasks}" MaxHeight="280">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="model:WorkTaskItem">
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                            <TextBlock Grid.Row="1" Style="{StaticResource CaptionTextStyle}">
+                                                <Run Text="{Binding ProjectName}" />
+                                                <Run Text=" | " />
+                                                <Run Text="{Binding StatusText}" />
+                                                <Run Text=" | " />
+                                                <Run Text="{Binding DueText}" />
+                                            </TextBlock>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

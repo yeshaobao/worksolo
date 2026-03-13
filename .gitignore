@@ -1,0 +1,10 @@
+bin/
+obj/
+App/
+AppLive/
+data/*.json
+*.user
+*.suo
+*.pdb
+*.pri
+WorkSolo.exe

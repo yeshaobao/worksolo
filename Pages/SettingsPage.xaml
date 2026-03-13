@@ -1,0 +1,93 @@
+<Page
+    x:Class="WorkClosure.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel Padding="24" Spacing="20">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Spacing="6">
+                    <TextBlock Text="设置" Style="{StaticResource PageTitleTextStyle}" />
+                    <TextBlock Text="像常用办公软件一样，把外观、提醒和默认启动页集中放在这里管理。" Style="{StaticResource CaptionTextStyle}" />
+                </StackPanel>
+
+                <Button
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Content="恢复当前保存值"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Command="{Binding ResetSettingsCommand}" />
+                <Button
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    Content="保存设置"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Command="{Binding SaveSettingsCommand}" />
+            </Grid>
+
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.2*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Spacing="16">
+                    <Border Style="{StaticResource SurfacePanelStyle}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="外观" Style="{StaticResource SectionTitleTextStyle}" />
+                            <TextBlock Text="调整主题风格，让界面更适合你的使用环境。" Style="{StaticResource CaptionTextStyle}" />
+                            <ComboBox
+                                Header="主题模式"
+                                DisplayMemberPath="Label"
+                                ItemsSource="{Binding ThemeOptions}"
+                                SelectedValuePath="Value"
+                                SelectedValue="{Binding SelectedThemeMode, Mode=TwoWay}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource SurfacePanelStyle}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="工作流" Style="{StaticResource SectionTitleTextStyle}" />
+                            <TextBlock Text="设置默认启动页和提醒策略，减少重复操作。" Style="{StaticResource CaptionTextStyle}" />
+                            <ComboBox
+                                Header="默认启动页"
+                                DisplayMemberPath="Label"
+                                ItemsSource="{Binding DefaultPageOptions}"
+                                SelectedValuePath="Value"
+                                SelectedValue="{Binding SelectedDefaultPageTag, Mode=TwoWay}" />
+                            <ToggleSwitch Header="启用到期提醒" IsOn="{Binding EnableReminders, Mode=TwoWay}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Spacing="16">
+                    <Border Style="{StaticResource SurfacePanelStyle}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="关于 WorkSolo" Style="{StaticResource SectionTitleTextStyle}" />
+                            <TextBlock Text="{Binding ProductDescription}" Style="{StaticResource CaptionTextStyle}" />
+                            <TextBlock Text="{Binding VersionText}" />
+                            <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource CaptionTextStyle}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource SurfacePanelStyle}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="数据与文档" Style="{StaticResource SectionTitleTextStyle}" />
+                            <TextBlock Text="数据文件保存在项目根目录下，可随时备份。" Style="{StaticResource CaptionTextStyle}" />
+                            <TextBox IsReadOnly="True" Text="{Binding DataPath}" />
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Button Content="打开数据目录" Style="{StaticResource SecondaryButtonStyle}" Click="OpenDataFolder_Click" />
+                                <Button Content="打开使用文档" Style="{StaticResource SecondaryButtonStyle}" Click="OpenManual_Click" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
