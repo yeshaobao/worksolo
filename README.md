@@ -4,7 +4,7 @@
 
 WorkSolo 是一个面向个人使用的 Windows 轻量桌面应用，用来记录工作事项、推进处理过程、标记完成状态，并按时间和项目维度做闭环复盘。
 
-当前仓库为 `V1` 首个正式版本源码。
+当前仓库为 `V1` 首个正式版本源码仓库。
 
 ## 产品定位
 
@@ -41,31 +41,31 @@ WorkSolo 聚焦一件事：
 - `Tools/`：辅助启动器源码
 - `使用说明.md`：项目内中文使用手册
 
+## 仓库说明
+
+这个 GitHub 仓库默认提交的是源码，不包含运行产物：
+
+- 不提交根目录 `WorkSolo.exe`
+- 不提交 `AppLive/` 运行目录
+- 不提交本地运行数据 `data/data.json`
+
+如果需要给其他人直接双击运行，建议单独打包发布可执行文件，或者使用 GitHub Releases 发布。
+
 ## 本地运行
 
-### 方式一
-
-直接双击项目根目录下的：
-
-```text
-WorkSolo.exe
-```
-
-### 方式二
-
-双击：
-
-```text
-Run-WorkSolo.cmd
-```
-
-### 方式三
-
-如果你在开发环境中自行构建：
+克隆源码后，请先在本地构建：
 
 ```powershell
 dotnet build .\WorkClosure.csproj -p:Platform=x64
 ```
+
+构建完成后，可从输出目录启动：
+
+```text
+bin\x64\Debug\net8.0-windows10.0.19041.0\WorkSolo.exe
+```
+
+如果你在自己的本地开发目录里额外保留了根目录 `WorkSolo.exe` 或 `AppLive\WorkSolo.exe`，那是本地运行产物，不属于源码仓库默认内容。
 
 ## 数据说明
 
