@@ -36,7 +36,7 @@ public sealed class SettingsViewModel : ObservableObject
         new() { Label = "总结复盘", Value = "summary" }
     ];
 
-    public string ProductName => "WorkSolo";
+    public string ProductName => AppInfo.ProductName;
 
     public string ProductDescription => "面向个人工作记录、推进和复盘的轻量桌面工具。";
 
@@ -45,7 +45,7 @@ public sealed class SettingsViewModel : ObservableObject
         get
         {
             var version = Assembly.GetExecutingAssembly().GetName().Version;
-            return version is null ? "版本未知" : $"版本 {version.Major}.{version.Minor}.{version.Build}";
+            return version is null ? "版本未知" : $"版本 {AppInfo.CurrentVersionTag}";
         }
     }
 

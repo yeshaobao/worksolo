@@ -91,6 +91,7 @@ public sealed partial class MainWindow : Window
             "tasks" => typeof(TasksPage),
             "projects" => typeof(ProjectsPage),
             "summary" => typeof(SummaryPage),
+            "updates" => typeof(UpdatesPage),
             "settings" => typeof(SettingsPage),
             _ => typeof(DashboardPage)
         };

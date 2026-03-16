@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.UI.Xaml.Controls;
+using WorkClosure.Helpers;
 using WorkClosure.ViewModels;
 
 namespace WorkClosure.Pages;
@@ -31,14 +32,8 @@ public sealed partial class SettingsPage : Page
 
     private void OpenManual_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        var root = Directory.GetParent(Path.GetDirectoryName(ViewModel.DataPath)!)?.FullName;
-        if (string.IsNullOrWhiteSpace(root))
-        {
-            return;
-        }
-
-        var manualPath = Path.Combine(root, "使用说明.md");
-        if (!File.Exists(manualPath))
+        var manualPath = AppInfo.ResolveManualPath();
+        if (string.IsNullOrWhiteSpace(manualPath) || !File.Exists(manualPath))
         {
             return;
         }

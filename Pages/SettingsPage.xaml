@@ -13,13 +13,13 @@
 
                 <StackPanel Spacing="6">
                     <TextBlock Text="设置" Style="{StaticResource PageTitleTextStyle}" />
-                    <TextBlock Text="像常用办公软件一样，把外观、提醒和默认启动页集中放在这里管理。" Style="{StaticResource CaptionTextStyle}" />
+                    <TextBlock Text="把外观、提醒、默认启动页和版本信息统一放在这里管理，保持使用体验更稳定。" Style="{StaticResource CaptionTextStyle}" />
                 </StackPanel>
 
                 <Button
                     Grid.Column="1"
                     VerticalAlignment="Center"
-                    Content="恢复当前保存值"
+                    Content="恢复已保存设置"
                     Style="{StaticResource SecondaryButtonStyle}"
                     Command="{Binding ResetSettingsCommand}" />
                 <Button
@@ -40,7 +40,7 @@
                     <Border Style="{StaticResource SurfacePanelStyle}">
                         <StackPanel Spacing="12">
                             <TextBlock Text="外观" Style="{StaticResource SectionTitleTextStyle}" />
-                            <TextBlock Text="调整主题风格，让界面更适合你的使用环境。" Style="{StaticResource CaptionTextStyle}" />
+                            <TextBlock Text="调整主题风格，让界面更适合你的工作环境和阅读习惯。" Style="{StaticResource CaptionTextStyle}" />
                             <ComboBox
                                 Header="主题模式"
                                 DisplayMemberPath="Label"
@@ -53,7 +53,7 @@
                     <Border Style="{StaticResource SurfacePanelStyle}">
                         <StackPanel Spacing="12">
                             <TextBlock Text="工作流" Style="{StaticResource SectionTitleTextStyle}" />
-                            <TextBlock Text="设置默认启动页和提醒策略，减少重复操作。" Style="{StaticResource CaptionTextStyle}" />
+                            <TextBlock Text="设置默认启动页和提醒策略，减少高频操作里的重复步骤。" Style="{StaticResource CaptionTextStyle}" />
                             <ComboBox
                                 Header="默认启动页"
                                 DisplayMemberPath="Label"
@@ -71,6 +71,7 @@
                             <TextBlock Text="关于 WorkSolo" Style="{StaticResource SectionTitleTextStyle}" />
                             <TextBlock Text="{Binding ProductDescription}" Style="{StaticResource CaptionTextStyle}" />
                             <TextBlock Text="{Binding VersionText}" />
+                            <TextBlock Text="版本历史和在线更新检查请到左侧“检查更新”页面查看。" Style="{StaticResource CaptionTextStyle}" />
                             <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource CaptionTextStyle}" />
                         </StackPanel>
                     </Border>
@@ -78,7 +79,7 @@
                     <Border Style="{StaticResource SurfacePanelStyle}">
                         <StackPanel Spacing="12">
                             <TextBlock Text="数据与文档" Style="{StaticResource SectionTitleTextStyle}" />
-                            <TextBlock Text="数据文件保存在项目根目录下，可随时备份。" Style="{StaticResource CaptionTextStyle}" />
+                            <TextBlock Text="数据文件保存在当前 Windows 账户的本地目录，升级应用时可以自动沿用。" Style="{StaticResource CaptionTextStyle}" />
                             <TextBox IsReadOnly="True" Text="{Binding DataPath}" />
                             <StackPanel Orientation="Horizontal" Spacing="12">
                                 <Button Content="打开数据目录" Style="{StaticResource SecondaryButtonStyle}" Click="OpenDataFolder_Click" />
