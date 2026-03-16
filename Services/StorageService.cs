@@ -5,28 +5,32 @@ namespace WorkClosure.Services;
 
 public sealed class StorageService
 {
+    private const int MaxBackupFiles = 5;
+
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         WriteIndented = true
     };
 
-    private readonly string _legacyDataFilePath;
+    private readonly IReadOnlyList<string> _legacyDataFilePaths;
 
     public StorageService()
     {
-        var projectRoot = ResolveProjectRoot();
-        DataDirectoryPath = Path.Combine(projectRoot, "data");
-        DataFilePath = Path.Combine(DataDirectoryPath, "data.json");
-
-        var legacyFolder = Path.Combine(
+        var localAppDataRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "WorkClosure");
-        _legacyDataFilePath = Path.Combine(legacyFolder, "data.json");
+            "WorkSolo");
+
+        DataDirectoryPath = localAppDataRoot;
+        DataFilePath = Path.Combine(DataDirectoryPath, "data.json");
+        BackupDirectoryPath = Path.Combine(DataDirectoryPath, "backups");
+        _legacyDataFilePaths = BuildLegacyDataFilePaths();
     }
 
     public string DataDirectoryPath { get; }
 
     public string DataFilePath { get; }
+
+    public string BackupDirectoryPath { get; }
 
     public async Task<AppDataStore> LoadAsync()
     {
@@ -44,6 +48,8 @@ public sealed class StorageService
     public async Task SaveAsync(AppDataStore payload)
     {
         Directory.CreateDirectory(DataDirectoryPath);
+
+        CreateBackupIfNeeded();
 
         var normalized = new AppDataStore
         {
@@ -70,32 +76,81 @@ public sealed class StorageService
 
     private void EnsureDataLocation()
     {
+        Directory.CreateDirectory(DataDirectoryPath);
+
         if (File.Exists(DataFilePath))
         {
             return;
         }
 
-        if (!File.Exists(_legacyDataFilePath))
+        foreach (var legacyFilePath in _legacyDataFilePaths)
         {
-            Directory.CreateDirectory(DataDirectoryPath);
+            if (!File.Exists(legacyFilePath))
+            {
+                continue;
+            }
+
+            File.Copy(legacyFilePath, DataFilePath, overwrite: false);
+            return;
+        }
+    }
+
+    private void CreateBackupIfNeeded()
+    {
+        if (!File.Exists(DataFilePath))
+        {
             return;
         }
 
-        Directory.CreateDirectory(DataDirectoryPath);
+        Directory.CreateDirectory(BackupDirectoryPath);
 
-        try
+        var backupFilePath = Path.Combine(
+            BackupDirectoryPath,
+            $"data-{DateTimeOffset.Now:yyyyMMdd-HHmmss}.json");
+
+        File.Copy(DataFilePath, backupFilePath, overwrite: false);
+
+        var expiredBackups = new DirectoryInfo(BackupDirectoryPath)
+            .GetFiles("data-*.json")
+            .OrderByDescending(file => file.CreationTimeUtc)
+            .Skip(MaxBackupFiles)
+            .ToList();
+
+        foreach (var expiredBackup in expiredBackups)
         {
-            File.Move(_legacyDataFilePath, DataFilePath);
+            expiredBackup.Delete();
         }
-        catch (IOException)
+    }
+
+    private IReadOnlyList<string> BuildLegacyDataFilePaths()
+    {
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var releaseRoot = ResolveReleaseRoot();
+        var projectRoot = ResolveProjectRoot();
+
+        return new[]
         {
-            File.Copy(_legacyDataFilePath, DataFilePath, overwrite: false);
-            File.Delete(_legacyDataFilePath);
+            Path.Combine(releaseRoot, "data", "data.json"),
+            Path.Combine(projectRoot, "data", "data.json"),
+            Path.Combine(localAppData, "WorkClosure", "data.json"),
+            Path.Combine(localAppData, "WorkClosure", "data", "data.json")
         }
-        catch (UnauthorizedAccessException)
+        .Where(path => !string.Equals(path, DataFilePath, StringComparison.OrdinalIgnoreCase))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToList();
+    }
+
+    private static string ResolveReleaseRoot()
+    {
+        var baseDirectory = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var current = new DirectoryInfo(baseDirectory);
+
+        if (string.Equals(current.Name, "AppLive", StringComparison.OrdinalIgnoreCase) && current.Parent is not null)
         {
-            File.Copy(_legacyDataFilePath, DataFilePath, overwrite: false);
+            return current.Parent.FullName;
         }
+
+        return current.FullName;
     }
 
     private static string ResolveProjectRoot()
@@ -112,6 +167,6 @@ public sealed class StorageService
             current = current.Parent;
         }
 
-        return AppContext.BaseDirectory;
+        return ResolveReleaseRoot();
     }
 }
