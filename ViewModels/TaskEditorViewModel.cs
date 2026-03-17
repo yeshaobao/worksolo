@@ -1,3 +1,4 @@
+using Microsoft.UI.Xaml;
 using WorkClosure.Helpers;
 using WorkClosure.Models;
 
@@ -59,7 +60,16 @@ public sealed class TaskEditorViewModel : ObservableObject
     public DateTimeOffset? DueDate
     {
         get => _dueDate;
-        set => SetProperty(ref _dueDate, value);
+        set
+        {
+            if (SetProperty(ref _dueDate, value))
+            {
+                OnPropertyChanged(nameof(MinimumDueDate));
+                OnPropertyChanged(nameof(HasDueDate));
+                OnPropertyChanged(nameof(DueDateEditorVisibility));
+                OnPropertyChanged(nameof(DueDateStatusText));
+            }
+        }
     }
 
     public DateTimeOffset CreatedAt
@@ -118,9 +128,42 @@ public sealed class TaskEditorViewModel : ObservableObject
 
     public string CreatedText => $"创建时间：{CreatedAt:yyyy-MM-dd HH:mm}";
 
-    public string StartedText => StartedAt.HasValue ? $"开始时间：{StartedAt.Value:yyyy-MM-dd HH:mm}" : "开始时间：未设置";
+    public string StartedText => StartedAt.HasValue
+        ? $"开始时间：{StartedAt.Value:yyyy-MM-dd HH:mm}"
+        : "开始时间：未设置";
 
-    public string CompletedText => CompletedAt.HasValue ? $"完成时间：{CompletedAt.Value:yyyy-MM-dd HH:mm}" : "完成时间：未设置";
+    public string CompletedText => CompletedAt.HasValue
+        ? $"实际完成：{CompletedAt.Value:yyyy-MM-dd HH:mm}"
+        : "实际完成：未设置";
+
+    public DateTimeOffset MinimumDueDate => DueDate.HasValue && DueDate.Value.Date < DateTimeOffset.Now.Date
+        ? DueDate.Value.Date
+        : DateTimeOffset.Now.Date;
+
+    public bool HasDueDate
+    {
+        get => DueDate.HasValue;
+        set
+        {
+            if (value)
+            {
+                if (!DueDate.HasValue)
+                {
+                    DueDate = DateTimeOffset.Now.Date;
+                }
+            }
+            else
+            {
+                DueDate = null;
+            }
+        }
+    }
+
+    public Visibility DueDateEditorVisibility => HasDueDate ? Visibility.Visible : Visibility.Collapsed;
+
+    public string DueDateStatusText => HasDueDate
+        ? $"预计完成时间：{DueDate:yyyy-MM-dd}"
+        : "预计完成时间：当前未设置";
 
     public IReadOnlyList<OptionItem> StatusOptions { get; } =
     [
@@ -135,6 +178,7 @@ public sealed class TaskEditorViewModel : ObservableObject
         new() { Label = "正常", Value = nameof(TaskAnomaly.None) },
         new() { Label = "延期", Value = nameof(TaskAnomaly.Delayed) },
         new() { Label = "阻塞", Value = nameof(TaskAnomaly.Blocked) },
+        new() { Label = "等待反馈", Value = nameof(TaskAnomaly.WaitingForFeedback) },
         new() { Label = "取消原因", Value = nameof(TaskAnomaly.CancelledReason) },
         new() { Label = "其他异常", Value = nameof(TaskAnomaly.Other) }
     ];
@@ -152,7 +196,7 @@ public sealed class TaskEditorViewModel : ObservableObject
         SelectedStatusValue = nameof(WorkTaskStatus.NotStarted);
         SelectedAnomalyValue = nameof(TaskAnomaly.None);
         AnomalyNote = string.Empty;
-        DueDate = DateTimeOffset.Now;
+        DueDate = null;
         CreatedAt = DateTimeOffset.Now;
         StartedAt = null;
         CompletedAt = null;

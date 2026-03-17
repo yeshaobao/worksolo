@@ -2,37 +2,72 @@
     x:Class="WorkClosure.Controls.StatCard"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Border Style="{StaticResource SurfacePanelCompactStyle}">
-        <Grid RowSpacing="10">
+    <Border
+        Background="{x:Bind CardBackground, Mode=OneWay}"
+        BorderBrush="{x:Bind CardBorderBrush, Mode=OneWay}"
+        BorderThickness="1"
+        CornerRadius="20"
+        Padding="18">
+        <Grid MinHeight="164">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Border
-                Width="42"
-                Height="6"
-                HorizontalAlignment="Left"
-                Background="{ThemeResource AppAccentBrush}"
-                CornerRadius="999" />
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Border
+                    Width="28"
+                    Height="4"
+                    VerticalAlignment="Center"
+                    Background="{x:Bind AccentBrush, Mode=OneWay}"
+                    CornerRadius="999" />
+
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    FontSize="15"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource AppMutedBrush}"
+                    Text="{x:Bind Title, Mode=OneWay}" />
+
+                <Border
+                    Grid.Column="2"
+                    Width="36"
+                    Height="36"
+                    Background="{x:Bind IconBackground, Mode=OneWay}"
+                    CornerRadius="18">
+                    <SymbolIcon
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="{x:Bind IconForeground, Mode=OneWay}"
+                        Symbol="{x:Bind IconSymbol, Mode=OneWay}" />
+                </Border>
+            </Grid>
 
             <TextBlock
                 Grid.Row="1"
-                Text="{x:Bind Title, Mode=OneWay}"
-                FontSize="14"
-                Foreground="{ThemeResource AppMutedBrush}" />
+                Margin="0,18,0,0"
+                FontSize="40"
+                FontWeight="SemiBold"
+                Foreground="{x:Bind ValueForeground, Mode=OneWay}"
+                Text="{x:Bind Value, Mode=OneWay}" />
 
-            <StackPanel Grid.Row="2" Spacing="4">
-                <TextBlock
-                    Text="{x:Bind Value, Mode=OneWay}"
-                    FontSize="34"
-                    FontWeight="SemiBold"
-                    Foreground="{ThemeResource AppTitleBrush}" />
-                <TextBlock
-                    Text="{x:Bind Subtitle, Mode=OneWay}"
-                    Style="{StaticResource CaptionTextStyle}" />
-            </StackPanel>
+            <TextBlock
+                Grid.Row="2"
+                Margin="0,10,0,0"
+                VerticalAlignment="Top"
+                FontSize="13"
+                Foreground="{ThemeResource AppBodyBrush}"
+                MaxLines="2"
+                Text="{x:Bind Subtitle, Mode=OneWay}"
+                TextWrapping="Wrap" />
         </Grid>
     </Border>
 </UserControl>

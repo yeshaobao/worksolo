@@ -47,6 +47,8 @@ public sealed class ProjectsViewModel : ObservableObject
                 Name = string.Empty;
                 Description = string.Empty;
                 IsActive = true;
+                OnPropertyChanged(nameof(EditorTitle));
+                OnPropertyChanged(nameof(SaveButtonText));
                 DeleteProjectCommand.NotifyCanExecuteChanged();
                 return;
             }
@@ -58,6 +60,8 @@ public sealed class ProjectsViewModel : ObservableObject
                 Name = project.Name;
                 Description = project.Description;
                 IsActive = project.IsActive;
+                OnPropertyChanged(nameof(EditorTitle));
+                OnPropertyChanged(nameof(SaveButtonText));
             }
 
             DeleteProjectCommand.NotifyCanExecuteChanged();
@@ -91,6 +95,10 @@ public sealed class ProjectsViewModel : ObservableObject
     public RelayCommand SaveProjectCommand { get; }
     public RelayCommand NewProjectCommand { get; }
     public RelayCommand DeleteProjectCommand { get; }
+
+    public string EditorTitle => _editingProjectId == Guid.Empty ? "新建项目" : "编辑项目";
+
+    public string SaveButtonText => _editingProjectId == Guid.Empty ? "创建项目" : "保存修改";
 
     public void Refresh()
     {
@@ -143,6 +151,8 @@ public sealed class ProjectsViewModel : ObservableObject
         Name = string.Empty;
         Description = string.Empty;
         IsActive = true;
+        OnPropertyChanged(nameof(EditorTitle));
+        OnPropertyChanged(nameof(SaveButtonText));
         SelectedSummary = null;
         DeleteProjectCommand.NotifyCanExecuteChanged();
     }

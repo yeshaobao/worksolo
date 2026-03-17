@@ -19,6 +19,8 @@ public sealed class WorkTaskItem : ObservableObject
 
     public Guid Id { get; set; } = Guid.NewGuid();
 
+    public List<TaskProgressEntry> ProgressEntries { get; set; } = [];
+
     public string Title
     {
         get => _title;
@@ -155,13 +157,14 @@ public sealed class WorkTaskItem : ObservableObject
         TaskAnomaly.None => "正常",
         TaskAnomaly.Delayed => "延期",
         TaskAnomaly.Blocked => "阻塞",
+        TaskAnomaly.WaitingForFeedback => "等待反馈",
         TaskAnomaly.CancelledReason => "取消原因",
         TaskAnomaly.Other => "其他异常",
         _ => "正常"
     };
 
     [JsonIgnore]
-    public string DueText => DueDate.HasValue ? $"截止：{DueDate.Value:yyyy-MM-dd}" : "截止：未设置";
+    public string DueText => DueDate.HasValue ? $"预计完成：{DueDate.Value:yyyy-MM-dd}" : "预计完成：未设置";
 
     [JsonIgnore]
     public string CreatedText => $"创建：{CreatedAt:yyyy-MM-dd HH:mm}";
@@ -171,6 +174,30 @@ public sealed class WorkTaskItem : ObservableObject
 
     [JsonIgnore]
     public string CompletedText => CompletedAt.HasValue ? $"完成：{CompletedAt.Value:yyyy-MM-dd HH:mm}" : "完成：未设置";
+
+    [JsonIgnore]
+    public bool HasProgressEntries => ProgressEntries.Count > 0;
+
+    [JsonIgnore]
+    public TaskProgressEntry? LatestProgressEntry => ProgressEntries
+        .OrderByDescending(entry => entry.EntryDate)
+        .ThenByDescending(entry => entry.CreatedAt)
+        .FirstOrDefault();
+
+    [JsonIgnore]
+    public string LatestProgressSummary => LatestProgressEntry is null
+        ? "最近进展：暂无记录"
+        : $"最近进展：{LatestProgressEntry.EntryDate:yyyy-MM-dd} {LatestProgressEntry.ProgressText}";
+
+    [JsonIgnore]
+    public string LatestIssueSummary => LatestProgressEntry is null || string.IsNullOrWhiteSpace(LatestProgressEntry.IssueText)
+        ? "当前问题：暂无"
+        : $"当前问题：{LatestProgressEntry.IssueText}";
+
+    [JsonIgnore]
+    public string LatestNextStepSummary => LatestProgressEntry is null || string.IsNullOrWhiteSpace(LatestProgressEntry.NextStepText)
+        ? "下一步：待补充"
+        : $"下一步：{LatestProgressEntry.NextStepText}";
 
     public WorkTaskItem Clone()
     {
@@ -187,7 +214,22 @@ public sealed class WorkTaskItem : ObservableObject
             StartedAt = StartedAt,
             DueDate = DueDate,
             CompletedAt = CompletedAt,
-            UpdatedAt = UpdatedAt
+            UpdatedAt = UpdatedAt,
+            ProgressEntries = ProgressEntries
+                .OrderBy(entry => entry.EntryDate)
+                .ThenBy(entry => entry.CreatedAt)
+                .Select(entry => new TaskProgressEntry
+                {
+                    Id = entry.Id,
+                    EntryDate = entry.EntryDate,
+                    ProgressText = entry.ProgressText,
+                    IssueText = entry.IssueText,
+                    NextStepText = entry.NextStepText,
+                    NeedFollowUp = entry.NeedFollowUp,
+                    IsKeyMilestone = entry.IsKeyMilestone,
+                    CreatedAt = entry.CreatedAt
+                })
+                .ToList()
         };
     }
 
@@ -221,5 +263,10 @@ public sealed class WorkTaskItem : ObservableObject
         OnPropertyChanged(nameof(StatusText));
         OnPropertyChanged(nameof(AnomalyText));
         OnPropertyChanged(nameof(DueText));
+        OnPropertyChanged(nameof(HasProgressEntries));
+        OnPropertyChanged(nameof(LatestProgressEntry));
+        OnPropertyChanged(nameof(LatestProgressSummary));
+        OnPropertyChanged(nameof(LatestIssueSummary));
+        OnPropertyChanged(nameof(LatestNextStepSummary));
     }
 }

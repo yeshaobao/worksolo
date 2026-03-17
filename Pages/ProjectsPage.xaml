@@ -18,10 +18,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <StackPanel Spacing="6">
-                <TextBlock Text="项目分类" Style="{StaticResource PageTitleTextStyle}" />
-                <TextBlock Text="项目用于组织事项和后续复盘。这里支持新增、编辑、停用和删除，删除项目时会将关联事项转为未分类。" Style="{StaticResource CaptionTextStyle}" />
-            </StackPanel>
+            <TextBlock Text="项目分类" Style="{StaticResource PageTitleTextStyle}" />
             <Button
                 Grid.Column="1"
                 VerticalAlignment="Center"
@@ -33,21 +30,20 @@
         <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource SurfacePanelStyle}">
             <StackPanel Spacing="12">
                 <TextBlock Text="项目概览" Style="{StaticResource SectionTitleTextStyle}" />
-                <TextBlock Text="选中左侧项目后，右侧即可直接编辑；未分类是系统聚合项，不能单独删除。" Style="{StaticResource CaptionTextStyle}" />
                 <ListView ItemsSource="{Binding ProjectSummaries}" SelectedItem="{Binding SelectedSummary, Mode=TwoWay}">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="model:ProjectProgressSummary">
-                            <Border Style="{StaticResource SurfacePanelCompactStyle}" Margin="0,0,0,10">
+                            <Border Margin="0,0,0,10" Style="{StaticResource SurfacePanelCompactStyle}">
                                 <StackPanel Spacing="8">
-                                    <TextBlock Text="{Binding ProjectName}" FontWeight="SemiBold" FontSize="16" />
+                                    <TextBlock Text="{Binding ProjectName}" FontSize="16" FontWeight="SemiBold" />
                                     <TextBlock Style="{StaticResource CaptionTextStyle}">
                                         <Run Text="总数：" />
                                         <Run Text="{Binding Total}" />
-                                        <Run Text="  ·  已完成：" />
+                                        <Run Text="  |  已完成：" />
                                         <Run Text="{Binding Completed}" />
-                                        <Run Text="  ·  未闭环：" />
+                                        <Run Text="  |  未闭环：" />
                                         <Run Text="{Binding Open}" />
-                                        <Run Text="  ·  已逾期：" />
+                                        <Run Text="  |  已超期：" />
                                         <Run Text="{Binding Overdue}" />
                                     </TextBlock>
                                 </StackPanel>
@@ -60,8 +56,7 @@
 
         <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource SurfacePanelStyle}">
             <StackPanel Spacing="12">
-                <TextBlock Text="编辑项目" Style="{StaticResource SectionTitleTextStyle}" />
-                <TextBlock Text="新建项目时只填名称也可以保存。删除项目后，原来归属该项目的事项会自动转为未分类。" Style="{StaticResource CaptionTextStyle}" />
+                <TextBlock Text="{Binding EditorTitle}" Style="{StaticResource SectionTitleTextStyle}" />
                 <TextBox Header="名称" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBox
                     Header="说明"
@@ -70,7 +65,7 @@
                     Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <ToggleSwitch Header="启用状态" IsOn="{Binding IsActive, Mode=TwoWay}" />
                 <StackPanel Orientation="Horizontal" Spacing="12">
-                    <Button Content="保存项目" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SaveProjectCommand}" />
+                    <Button Content="{Binding SaveButtonText}" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SaveProjectCommand}" />
                     <Button Content="新建空白" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding NewProjectCommand}" />
                     <Button Content="删除项目" Style="{StaticResource DangerButtonStyle}" Command="{Binding DeleteProjectCommand}" />
                 </StackPanel>

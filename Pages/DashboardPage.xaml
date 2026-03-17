@@ -4,156 +4,239 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:WorkClosure.Controls"
     xmlns:model="using:WorkClosure.Models">
-    <ScrollViewer>
-        <StackPanel Padding="24" Spacing="20">
-            <Border Style="{StaticResource HeroPanelStyle}">
-                <Grid ColumnSpacing="20">
+    <Grid Padding="24" ColumnSpacing="18">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="20">
+                <Border Style="{StaticResource HeroPanelStyle}">
+                    <Grid ColumnSpacing="24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Spacing="14">
+                            <TextBlock Text="今天先做什么" Style="{StaticResource HeroTitleTextStyle}" />
+                            <Grid ColumnSpacing="12" MaxWidth="760">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox
+                                    Grid.Column="0"
+                                    Header="快速新增"
+                                    PlaceholderText="例如：整理周会纪要并发出"
+                                    Text="{Binding QuickAddTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <Button
+                                    Grid.Column="1"
+                                    VerticalAlignment="Bottom"
+                                    Content="加入清单"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Command="{Binding QuickAddCommand}" />
+                            </Grid>
+                        </StackPanel>
+
+                        <Border
+                            Grid.Column="1"
+                            Background="#1FFFFFFF"
+                            BorderBrush="#33FFFFFF"
+                            BorderThickness="1"
+                            CornerRadius="20"
+                            Padding="18">
+                            <StackPanel Spacing="10">
+                                <TextBlock
+                                    Text="每日一句"
+                                    Foreground="White"
+                                    FontSize="16"
+                                    FontWeight="SemiBold" />
+                                <TextBlock
+                                    Text="{Binding DailyQuoteText}"
+                                    Style="{StaticResource HeroBodyTextStyle}"
+                                    FontSize="18"
+                                    TextWrapping="WrapWholeWords" />
+                                <TextBlock
+                                    Text="{Binding DailyQuoteSource}"
+                                    Foreground="#D9F6F2"
+                                    FontSize="13"
+                                    TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="今天先把关键事项推进到闭环" Style="{StaticResource HeroTitleTextStyle}" />
-                        <TextBlock
-                            Text="这里适合快速补一条新事项，随后在事项清单中继续补充项目、日期和异常说明。"
-                            Style="{StaticResource HeroBodyTextStyle}" />
-                        <Grid ColumnSpacing="12" MaxWidth="720">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBox
-                                Grid.Column="0"
-                                Header="快速新增"
-                                PlaceholderText="例如：整理周会纪要并发送"
-                                Text="{Binding QuickAddTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                            <Button
-                                Grid.Column="1"
-                                VerticalAlignment="Bottom"
-                                Content="加入清单"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                Command="{Binding QuickAddCommand}" />
-                        </Grid>
-                    </StackPanel>
+                    <Button
+                        Grid.Column="0"
+                        Height="176"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="0"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        Click="OpenPendingTasks_Click">
+                        <controls:StatCard
+                            Title="待推进事项"
+                            Value="{Binding PendingCount}"
+                            Subtitle="仍需要继续推进和收口的事项"
+                            IconSymbol="Clock"
+                            CardBackground="{ThemeResource AppSurfaceBrush}"
+                            CardBorderBrush="{ThemeResource AppBorderStrongBrush}"
+                            AccentBrush="{ThemeResource AppAccentBrush}"
+                            IconBackground="{ThemeResource AppAccentSoftBrush}"
+                            IconForeground="{ThemeResource AppAccentStrongBrush}" />
+                    </Button>
+
+                    <Button
+                        Grid.Column="1"
+                        Height="176"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="0"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        Click="OpenOverdueTasks_Click">
+                        <controls:StatCard
+                            Title="超期事项"
+                            Value="{Binding OverdueCount}"
+                            Subtitle="已超过预计完成时间"
+                            IconSymbol="Stop"
+                            CardBackground="{ThemeResource AppSurfaceBrush}"
+                            CardBorderBrush="{ThemeResource AppBorderBrush}"
+                            AccentBrush="{ThemeResource WarningBrush}"
+                            IconBackground="{ThemeResource WarningSoftBrush}"
+                            IconForeground="{ThemeResource WarningBrush}" />
+                    </Button>
+
+                    <Button
+                        Grid.Column="2"
+                        Height="176"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="0"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        Click="OpenExceptionTasks_Click">
+                        <controls:StatCard
+                            Title="异常 / 阻塞"
+                            Value="{Binding ExceptionCount}"
+                            Subtitle="延期、阻塞、等待反馈"
+                            IconSymbol="Flag"
+                            CardBackground="{ThemeResource AppSurfaceBrush}"
+                            CardBorderBrush="{ThemeResource AppBorderBrush}"
+                            AccentBrush="{ThemeResource DangerBrush}"
+                            IconBackground="{ThemeResource DangerSoftBrush}"
+                            IconForeground="{ThemeResource DangerBrush}" />
+                    </Button>
+
+                    <Button
+                        Grid.Column="3"
+                        Height="176"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="0"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        Click="OpenRecentTasks_Click">
+                        <controls:StatCard
+                            Title="最近更新"
+                            Value="{Binding RecentUpdatedCount}"
+                            Subtitle="近 7 天有推进或状态变化"
+                            IconSymbol="Sync"
+                            CardBackground="{ThemeResource AppSurfaceBrush}"
+                            CardBorderBrush="{ThemeResource AppBorderBrush}"
+                            AccentBrush="{ThemeResource InfoBrush}"
+                            IconBackground="{ThemeResource InfoSoftBrush}"
+                            IconForeground="{ThemeResource InfoStrongBrush}" />
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border
+            Grid.Column="1"
+            Width="380"
+            Style="{StaticResource SurfacePanelStyle}"
+            Visibility="{Binding InspectorVisibility}">
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="{Binding InspectorTitle}" Style="{StaticResource SectionTitleTextStyle}" />
+                    <Button
+                        Grid.Column="1"
+                        Content="返回"
+                        Command="{Binding CloseInspectorCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+                </Grid>
+
+                <Grid Grid.Row="1">
+                    <ListView ItemsSource="{Binding InspectorTasks}" Visibility="{Binding InspectorTasksVisibility}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="model:WorkTaskItem">
+                                <Border Margin="0,0,0,10" Style="{StaticResource SurfacePanelCompactStyle}">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                        <TextBlock Style="{StaticResource CaptionTextStyle}">
+                                            <Run Text="{Binding ProjectName}" />
+                                            <Run Text=" | " />
+                                            <Run Text="{Binding StatusText}" />
+                                            <Run Text=" | " />
+                                            <Run Text="{Binding DueText}" />
+                                        </TextBlock>
+                                        <TextBlock
+                                            Text="{Binding LatestProgressSummary}"
+                                            Style="{StaticResource CaptionTextStyle}" />
+                                        <Button
+                                            HorizontalAlignment="Left"
+                                            Click="InspectorTaskButton_Click"
+                                            Content="进入事项清单"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Tag="{Binding}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
 
                     <Border
-                        Grid.Column="1"
-                        Background="#1FFFFFFF"
-                        BorderBrush="#33FFFFFF"
+                        Padding="20"
+                        Background="{ThemeResource AppSurfaceAltBrush}"
+                        BorderBrush="{ThemeResource AppBorderBrush}"
                         BorderThickness="1"
-                        CornerRadius="20"
-                        Padding="18">
-                        <StackPanel Spacing="10">
-                            <TextBlock Text="今日关注" Foreground="White" FontSize="16" FontWeight="SemiBold" />
-                            <TextBlock Text="先处理已逾期，再清理今天到期事项，最后推进最近待办。" Style="{StaticResource HeroBodyTextStyle}" />
-                            <TextBlock Text="建议顺序：逾期 -> 今日到期 -> 最近待推进" Style="{StaticResource HeroBodyTextStyle}" />
-                        </StackPanel>
+                        CornerRadius="16"
+                        Visibility="{Binding InspectorEmptyVisibility}">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Text="{Binding InspectorEmptyText}"
+                            Style="{StaticResource CaptionTextStyle}" />
                     </Border>
                 </Grid>
-            </Border>
-
-            <Grid ColumnSpacing="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <controls:StatCard Grid.Column="0" Title="待处理事项" Value="{Binding OpenCount}" Subtitle="当前还未闭环的事项数量" />
-                <controls:StatCard Grid.Column="1" Title="今天到期" Value="{Binding TodayDueCount}" Subtitle="今天需要重点关注的事项" />
-                <controls:StatCard Grid.Column="2" Title="已逾期" Value="{Binding OverdueCount}" Subtitle="已经超过截止日期的事项" />
-                <controls:StatCard Grid.Column="3" Title="本周完成" Value="{Binding CompletedThisWeekCount}" Subtitle="本周已闭环的事项数量" />
             </Grid>
-
-            <Grid ColumnSpacing="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0" Style="{StaticResource SurfacePanelStyle}">
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="今天到期" Style="{StaticResource SectionTitleTextStyle}" />
-                        <TextBlock Text="优先清掉今天必须完成或确认状态的工作项。" Style="{StaticResource CaptionTextStyle}" />
-                        <ListView ItemsSource="{Binding TodayDueTasks}" MaxHeight="380">
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="model:WorkTaskItem">
-                                    <Grid Margin="0,0,0,10">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
-                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
-                                        <TextBlock Grid.Row="1" Style="{StaticResource CaptionTextStyle}">
-                                            <Run Text="{Binding ProjectName}" />
-                                            <Run Text=" | " />
-                                            <Run Text="{Binding StatusText}" />
-                                            <Run Text=" | " />
-                                            <Run Text="{Binding DueText}" />
-                                        </TextBlock>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="1" Style="{StaticResource SurfacePanelStyle}">
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="已逾期" Style="{StaticResource SectionTitleTextStyle}" />
-                        <TextBlock Text="这些事项已经超时，建议先更新状态或补充异常原因。" Style="{StaticResource CaptionTextStyle}" />
-                        <ListView ItemsSource="{Binding OverdueTasks}" MaxHeight="380">
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="model:WorkTaskItem">
-                                    <Grid Margin="0,0,0,10">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
-                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
-                                        <TextBlock Grid.Row="1" Style="{StaticResource CaptionTextStyle}">
-                                            <Run Text="{Binding ProjectName}" />
-                                            <Run Text=" | " />
-                                            <Run Text="{Binding AnomalyText}" />
-                                            <Run Text=" | " />
-                                            <Run Text="{Binding DueText}" />
-                                        </TextBlock>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="2" Style="{StaticResource SurfacePanelStyle}">
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="最近待推进" Style="{StaticResource SectionTitleTextStyle}" />
-                        <TextBlock Text="这里聚合近期仍未闭环的事项，方便持续追踪。" Style="{StaticResource CaptionTextStyle}" />
-                        <ListView ItemsSource="{Binding RecentTasks}" MaxHeight="380">
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="model:WorkTaskItem">
-                                    <Grid Margin="0,0,0,10">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
-                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
-                                        <TextBlock Grid.Row="1" Style="{StaticResource CaptionTextStyle}">
-                                            <Run Text="{Binding ProjectName}" />
-                                            <Run Text=" | " />
-                                            <Run Text="{Binding StatusText}" />
-                                            <Run Text=" | " />
-                                            <Run Text="{Binding DueText}" />
-                                        </TextBlock>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                    </StackPanel>
-                </Border>
-            </Grid>
-        </StackPanel>
-    </ScrollViewer>
+        </Border>
+    </Grid>
 </Page>

@@ -7,6 +7,7 @@ public sealed class AppState
 {
     private readonly StorageService _storageService;
     private bool _initialized;
+    private TaskNavigationRequest? _pendingTaskNavigationRequest;
 
     public AppState(StorageService storageService)
     {
@@ -51,7 +52,27 @@ public sealed class AppState
     {
         var options = new List<ProjectOption>
         {
-            new() { Id = null, Name = "未分类" }
+            new() { Id = null, Name = "未分类", IsUncategorizedOption = true }
+        };
+
+        options.AddRange(Projects
+            .OrderBy(project => project.IsActive ? 0 : 1)
+            .ThenBy(project => project.Name)
+            .Select(project => new ProjectOption
+            {
+                Id = project.Id,
+                Name = project.IsActive ? project.Name : $"{project.Name}（已停用）"
+            }));
+
+        return options;
+    }
+
+    public IReadOnlyList<ProjectOption> GetProjectFilterOptions()
+    {
+        var options = new List<ProjectOption>
+        {
+            new() { Id = Guid.Empty, Name = "全部项目", IsAllOption = true },
+            new() { Id = null, Name = "未分类", IsUncategorizedOption = true }
         };
 
         options.AddRange(Projects
@@ -89,12 +110,28 @@ public sealed class AppState
             CreatedAt = DateTimeOffset.Now,
             UpdatedAt = DateTimeOffset.Now,
             Status = WorkTaskStatus.NotStarted,
-            Anomaly = TaskAnomaly.None,
-            DueDate = DateTimeOffset.Now
+            Anomaly = TaskAnomaly.None
         };
 
         Tasks.Insert(0, task);
         await PersistAndNotifyAsync();
+    }
+
+    public WorkTaskItem? FindTask(Guid taskId)
+    {
+        return Tasks.FirstOrDefault(task => task.Id == taskId);
+    }
+
+    public void QueueTaskNavigation(TaskNavigationRequest request)
+    {
+        _pendingTaskNavigationRequest = request;
+    }
+
+    public TaskNavigationRequest? ConsumeTaskNavigation()
+    {
+        var request = _pendingTaskNavigationRequest;
+        _pendingTaskNavigationRequest = null;
+        return request;
     }
 
     public async Task SaveTaskAsync(WorkTaskItem draft)
@@ -143,6 +180,29 @@ public sealed class AppState
         }
 
         Tasks.Remove(existing);
+        await PersistAndNotifyAsync();
+    }
+
+    public async Task AddTaskProgressAsync(Guid taskId, TaskProgressEntry entry)
+    {
+        var task = FindTask(taskId);
+        if (task is null)
+        {
+            return;
+        }
+
+        task.ProgressEntries.Add(new TaskProgressEntry
+        {
+            Id = entry.Id == Guid.Empty ? Guid.NewGuid() : entry.Id,
+            EntryDate = entry.EntryDate,
+            ProgressText = entry.ProgressText.Trim(),
+            IssueText = entry.IssueText.Trim(),
+            NextStepText = entry.NextStepText.Trim(),
+            NeedFollowUp = entry.NeedFollowUp,
+            IsKeyMilestone = entry.IsKeyMilestone,
+            CreatedAt = entry.CreatedAt == default ? DateTimeOffset.Now : entry.CreatedAt
+        });
+        task.Touch();
         await PersistAndNotifyAsync();
     }
 

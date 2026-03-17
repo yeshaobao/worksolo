@@ -10,153 +10,229 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2.1*" />
-            <ColumnDefinition Width="1.1*" />
+            <ColumnDefinition Width="1.75*" />
+            <ColumnDefinition Width="1.05*" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Spacing="6">
-            <TextBlock Text="事项清单" Style="{StaticResource PageTitleTextStyle}" />
-            <TextBlock Text="在这里集中处理新增、编辑、状态变更和删除，让每一条事项都能从记录走到闭环。" Style="{StaticResource CaptionTextStyle}" />
-        </StackPanel>
+        <Grid Grid.Row="0" Grid.ColumnSpan="2" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-        <Border Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Style="{StaticResource SurfacePanelStyle}">
+            <Button
+                x:Name="BackToPreviousButton"
+                Grid.Column="0"
+                VerticalAlignment="Top"
+                Content="返回"
+                Style="{StaticResource SecondaryButtonStyle}"
+                Visibility="Collapsed"
+                Click="BackToPreviousButton_Click" />
+
+            <TextBlock
+                Grid.Column="1"
+                Text="事项清单"
+                Style="{StaticResource PageTitleTextStyle}" />
+        </Grid>
+
+        <Border Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource SurfacePanelStyle}">
             <StackPanel Spacing="14">
-                <CommandBar DefaultLabelPosition="Right">
-                    <AppBarButton Label="新建" Icon="Add" Command="{Binding NewTaskCommand}" />
-                    <AppBarButton Label="开始" Icon="Play" Command="{Binding StartTaskCommand}" />
-                    <AppBarButton Label="完成" Icon="Accept" Command="{Binding CompleteTaskCommand}" />
-                    <AppBarButton Label="取消" Icon="Cancel" Command="{Binding CancelTaskCommand}" />
-                    <AppBarButton Label="删除" Icon="Delete" Command="{Binding DeleteTaskCommand}" />
+                <CommandBar DefaultLabelPosition="Right" HorizontalAlignment="Left">
+                    <AppBarButton Icon="Add" Label="新建事项" Click="NewTaskDialogButton_Click" />
+                    <AppBarButton Icon="OpenLocal" Label="打开事项" IsEnabled="{Binding HasSelectedTask}" Click="EditTaskDialogButton_Click" />
+                    <AppBarSeparator />
+                    <AppBarButton Icon="Play" Label="标记进行中" Command="{Binding StartTaskCommand}" />
+                    <AppBarButton Icon="Accept" Label="标记完成" Command="{Binding CompleteTaskCommand}" />
+                    <AppBarButton Icon="Cancel" Label="标记取消" Command="{Binding CancelTaskCommand}" />
+                    <AppBarButton Icon="Delete" Label="删除" Command="{Binding DeleteTaskCommand}" />
                 </CommandBar>
 
-                <Grid ColumnSpacing="12">
+                <Grid ColumnSpacing="10">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*" />
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="1.1*" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="1.15*" />
+                        <ColumnDefinition Width="140" />
+                        <ColumnDefinition Width="170" />
                     </Grid.ColumnDefinitions>
+
                     <TextBox
                         Grid.Column="0"
-                        Header="快速新增"
-                        PlaceholderText="先输入标题，默认截止日期为今天"
+                        PlaceholderText="快速新增事项标题"
                         Text="{Binding QuickAddTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <ComboBox
-                        Grid.Column="1"
-                        Header="范围"
-                        DisplayMemberPath="Label"
-                        ItemsSource="{Binding ScopeOptions}"
-                        SelectedValuePath="Value"
-                        SelectedValue="{Binding SelectedScopeFilter, Mode=TwoWay}" />
                     <Button
-                        Grid.Column="2"
-                        VerticalAlignment="Bottom"
+                        Grid.Column="1"
                         Content="加入清单"
                         Style="{StaticResource PrimaryButtonStyle}"
                         Command="{Binding QuickAddCommand}" />
-                </Grid>
-
-                <Grid ColumnSpacing="12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
                     <TextBox
-                        Grid.Column="0"
-                        Header="搜索"
-                        PlaceholderText="按标题搜索事项"
+                        Grid.Column="2"
+                        PlaceholderText="按标题、项目或进展内容搜索"
                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <ComboBox
-                        Grid.Column="1"
-                        Header="项目"
+                        Grid.Column="3"
+                        DisplayMemberPath="Label"
+                        ItemsSource="{Binding ScopeOptions}"
+                        PlaceholderText="范围"
+                        SelectedValuePath="Value"
+                        SelectedValue="{Binding SelectedScopeFilter, Mode=TwoWay}" />
+                    <ComboBox
+                        Grid.Column="4"
                         DisplayMemberPath="Name"
                         ItemsSource="{Binding ProjectFilters}"
+                        PlaceholderText="项目"
                         SelectedValuePath="Id"
                         SelectedValue="{Binding SelectedProjectFilterId, Mode=TwoWay}" />
                 </Grid>
-
-                <TextBlock Text="单击左侧事项即可进入编辑；删除会直接移除当前事项。" Style="{StaticResource CaptionTextStyle}" />
-
-                <ListView
-                    Height="560"
-                    ItemsSource="{Binding FilteredTasks}"
-                    SelectedItem="{Binding SelectedTask, Mode=TwoWay}">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="model:WorkTaskItem">
-                            <Border Style="{StaticResource SurfacePanelCompactStyle}" Margin="0,0,0,10">
-                                <Grid RowSpacing="8">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="16" />
-                                    <TextBlock Grid.Row="1" Style="{StaticResource CaptionTextStyle}">
-                                        <Run Text="项目：" />
-                                        <Run Text="{Binding ProjectName}" />
-                                        <Run Text="  ·  状态：" />
-                                        <Run Text="{Binding StatusText}" />
-                                        <Run Text="  ·  异常：" />
-                                        <Run Text="{Binding AnomalyText}" />
-                                    </TextBlock>
-                                    <TextBlock Grid.Row="2" Style="{StaticResource CaptionTextStyle}">
-                                        <Run Text="{Binding CreatedText}" />
-                                        <Run Text="  ·  " />
-                                        <Run Text="{Binding DueText}" />
-                                    </TextBlock>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Style="{StaticResource SurfacePanelStyle}">
-            <ScrollViewer>
-                <StackPanel Spacing="12">
-                    <TextBlock Text="{Binding Editor.HeaderText}" Style="{StaticResource SectionTitleTextStyle}" />
-                    <TextBlock Text="右侧用于补充标题、项目、日期和异常说明。新建事项时，截止日期默认就是今天。" Style="{StaticResource CaptionTextStyle}" />
-                    <TextBox Header="标题" Text="{Binding Editor.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <ComboBox
-                        Header="项目"
-                        DisplayMemberPath="Name"
-                        ItemsSource="{Binding Editor.ProjectOptions}"
-                        SelectedValuePath="Id"
-                        SelectedValue="{Binding Editor.SelectedProjectId, Mode=TwoWay}" />
-                    <ComboBox
-                        Header="主状态"
-                        DisplayMemberPath="Label"
-                        ItemsSource="{Binding Editor.StatusOptions}"
-                        SelectedValuePath="Value"
-                        SelectedValue="{Binding Editor.SelectedStatusValue, Mode=TwoWay}" />
-                    <ComboBox
-                        Header="异常标记"
-                        DisplayMemberPath="Label"
-                        ItemsSource="{Binding Editor.AnomalyOptions}"
-                        SelectedValuePath="Value"
-                        SelectedValue="{Binding Editor.SelectedAnomalyValue, Mode=TwoWay}" />
-                    <CalendarDatePicker Header="截止日期" Date="{Binding Editor.DueDate, Mode=TwoWay}" />
-                    <TextBox
-                        Header="异常说明"
-                        AcceptsReturn="True"
-                        MinHeight="90"
-                        Text="{Binding Editor.AnomalyNote, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        <Border Grid.Row="2" Grid.Column="0" Style="{StaticResource SurfacePanelStyle}">
+            <ListView ItemsSource="{Binding FilteredTasks}" SelectedItem="{Binding SelectedTask, Mode=TwoWay}">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="model:WorkTaskItem">
+                        <Border Margin="0,0,0,10" Style="{StaticResource SurfacePanelCompactStyle}">
+                            <Grid RowSpacing="8">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
 
-                    <Border Style="{StaticResource SurfacePanelCompactStyle}">
-                        <StackPanel Spacing="6">
-                            <TextBlock Text="时间信息" FontWeight="SemiBold" />
-                            <TextBlock Style="{StaticResource CaptionTextStyle}" Text="{Binding Editor.CreatedText}" />
-                            <TextBlock Style="{StaticResource CaptionTextStyle}" Text="{Binding Editor.StartedText}" />
-                            <TextBlock Style="{StaticResource CaptionTextStyle}" Text="{Binding Editor.CompletedText}" />
-                        </StackPanel>
-                    </Border>
+                                <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" TextWrapping="WrapWholeWords" />
+                                <TextBlock Grid.Row="1" Style="{StaticResource CaptionTextStyle}">
+                                    <Run Text="项目：" />
+                                    <Run Text="{Binding ProjectName}" />
+                                    <Run Text="  |  状态：" />
+                                    <Run Text="{Binding StatusText}" />
+                                    <Run Text="  |  异常：" />
+                                    <Run Text="{Binding AnomalyText}" />
+                                </TextBlock>
+                                <TextBlock Grid.Row="2" Style="{StaticResource CaptionTextStyle}">
+                                    <Run Text="{Binding CreatedText}" />
+                                    <Run Text="  |  " />
+                                    <Run Text="{Binding DueText}" />
+                                </TextBlock>
+                                <TextBlock
+                                    Grid.Row="3"
+                                    Style="{StaticResource CaptionTextStyle}"
+                                    Text="{Binding LatestProgressSummary}"
+                                    TextWrapping="WrapWholeWords" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Border>
 
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <Button Content="保存事项" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SaveTaskCommand}" />
-                        <Button Content="新建空白" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding NewTaskCommand}" />
-                        <Button Content="删除事项" Style="{StaticResource DangerButtonStyle}" Command="{Binding DeleteTaskCommand}" />
+        <Border Grid.Row="2" Grid.Column="1" Style="{StaticResource SurfacePanelStyle}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" VerticalScrollMode="Enabled">
+                <Grid Padding="0,4,0,0">
+                    <StackPanel Visibility="{Binding EmptySelectionVisibility}" Spacing="12">
+                        <TextBlock Text="事项预览" Style="{StaticResource SectionTitleTextStyle}" />
+                        <Border Style="{StaticResource SurfacePanelCompactStyle}">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="当前未选择事项" FontSize="18" FontWeight="SemiBold" />
+                                <TextBlock
+                                    Text="可先从左侧选中事项，或直接点击上方“新建事项”。"
+                                    Style="{StaticResource CaptionTextStyle}" />
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
-                </StackPanel>
+
+                    <StackPanel Visibility="{Binding SelectedTaskVisibility}" Spacing="14">
+                        <TextBlock Text="事项预览" Style="{StaticResource SectionTitleTextStyle}" />
+
+                        <Border Style="{StaticResource SurfacePanelCompactStyle}">
+                            <StackPanel Spacing="10">
+                                <TextBlock
+                                    Text="{Binding SelectedTask.Title}"
+                                    FontSize="20"
+                                    FontWeight="SemiBold"
+                                    TextWrapping="WrapWholeWords" />
+                                <TextBlock Style="{StaticResource CaptionTextStyle}">
+                                    <Run Text="项目：" />
+                                    <Run Text="{Binding SelectedTask.ProjectName}" />
+                                    <Run Text="  |  状态：" />
+                                    <Run Text="{Binding SelectedTask.StatusText}" />
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource CaptionTextStyle}">
+                                    <Run Text="异常：" />
+                                    <Run Text="{Binding SelectedTask.AnomalyText}" />
+                                    <Run Text="  |  " />
+                                    <Run Text="{Binding SelectedTask.DueText}" />
+                                </TextBlock>
+                                <TextBlock
+                                    Style="{StaticResource CaptionTextStyle}"
+                                    Text="{Binding SelectedTask.AnomalyNote}"
+                                    TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+
+                        <Button
+                            Content="打开事项"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Click="EditTaskDialogButton_Click" />
+
+                        <Border Style="{StaticResource SurfacePanelCompactStyle}">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="基本信息" FontSize="16" FontWeight="SemiBold" />
+                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="{Binding SelectedTask.CreatedText}" />
+                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="{Binding SelectedTask.StartedText}" />
+                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="{Binding SelectedTask.CompletedText}" />
+                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="{Binding SelectedTask.LatestProgressSummary}" TextWrapping="WrapWholeWords" />
+                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="{Binding SelectedTask.LatestIssueSummary}" TextWrapping="WrapWholeWords" />
+                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="{Binding SelectedTask.LatestNextStepSummary}" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="最近进展" Style="{StaticResource SectionTitleTextStyle}" />
+                            <TextBlock
+                                Visibility="{Binding EmptyProgressVisibility}"
+                                Text="当前还没有进展记录。"
+                                Style="{StaticResource CaptionTextStyle}" />
+
+                            <ItemsControl Visibility="{Binding ProgressEntriesVisibility}" ItemsSource="{Binding ProgressEntries}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="model:TaskProgressEntry">
+                                        <Border Margin="0,0,0,10" Style="{StaticResource SurfacePanelCompactStyle}">
+                                            <StackPanel Spacing="8">
+                                                <Grid ColumnSpacing="12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <TextBlock FontWeight="SemiBold" Text="{Binding EntryDateText}" />
+                                                    <TextBlock
+                                                        Grid.Column="1"
+                                                        Foreground="{ThemeResource WarningBrush}"
+                                                        Text="{Binding FollowUpText}" />
+                                                    <TextBlock
+                                                        Grid.Column="2"
+                                                        Foreground="{ThemeResource AppAccentStrongBrush}"
+                                                        Text="{Binding MilestoneText}" />
+                                                </Grid>
+                                                <TextBlock Text="{Binding ProgressText}" TextWrapping="WrapWholeWords" />
+                                                <TextBlock
+                                                    Style="{StaticResource CaptionTextStyle}"
+                                                    Text="{Binding IssueText}"
+                                                    TextWrapping="WrapWholeWords" />
+                                                <TextBlock
+                                                    Style="{StaticResource CaptionTextStyle}"
+                                                    Text="{Binding NextStepText}"
+                                                    TextWrapping="WrapWholeWords" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
             </ScrollViewer>
         </Border>
     </Grid>

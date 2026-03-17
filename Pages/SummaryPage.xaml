@@ -4,54 +4,64 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:WorkClosure.Controls"
     xmlns:model="using:WorkClosure.Models">
-    <ScrollViewer>
-        <StackPanel Padding="20" Spacing="20">
-            <StackPanel Spacing="6">
+    <Grid Padding="20" ColumnSpacing="16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <ScrollViewer Grid.Column="0">
+            <StackPanel Spacing="20">
                 <TextBlock Text="总结复盘" Style="{StaticResource PageTitleTextStyle}" />
-                <TextBlock Text="从时间和项目两个维度查看新增、完成、未闭环和逾期情况，帮助你持续复盘工作节奏。" Style="{StaticResource CaptionTextStyle}" />
-            </StackPanel>
 
-            <Border Style="{StaticResource SurfacePanelStyle}">
-                <StackPanel Orientation="Horizontal" Spacing="12">
-                    <ComboBox
-                        Width="180"
-                        Header="统计周期"
-                        DisplayMemberPath="Label"
-                        ItemsSource="{Binding PeriodOptions}"
-                        SelectedValuePath="Value"
-                        SelectedValue="{Binding SelectedPeriod, Mode=TwoWay}" />
-                    <Button VerticalAlignment="Bottom" Content="上一周期" Command="{Binding PreviousPeriodCommand}" />
-                    <Button VerticalAlignment="Bottom" Content="下一周期" Command="{Binding NextPeriodCommand}" />
-                    <TextBlock VerticalAlignment="Bottom" Text="{Binding RangeTitle}" Style="{StaticResource SectionTitleTextStyle}" />
-                </StackPanel>
-            </Border>
+                <Border Style="{StaticResource SurfacePanelStyle}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <ComboBox
+                            Width="180"
+                            Header="统计周期"
+                            DisplayMemberPath="Label"
+                            ItemsSource="{Binding PeriodOptions}"
+                            SelectedValuePath="Value"
+                            SelectedValue="{Binding SelectedPeriod, Mode=TwoWay}" />
+                        <Button VerticalAlignment="Bottom" Content="上一周期" Command="{Binding PreviousPeriodCommand}" />
+                        <Button VerticalAlignment="Bottom" Content="下一周期" Command="{Binding NextPeriodCommand}" />
+                        <TextBlock VerticalAlignment="Bottom" Text="{Binding RangeTitle}" Style="{StaticResource SectionTitleTextStyle}" />
+                    </StackPanel>
+                </Border>
 
-            <Grid ColumnSpacing="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <controls:StatCard Grid.Column="0" Title="新增事项" Value="{Binding CreatedCount}" Subtitle="所选周期内新建的事项数量" />
-                <controls:StatCard Grid.Column="1" Title="完成事项" Value="{Binding CompletedCount}" Subtitle="所选周期内已闭环完成的事项" />
-                <controls:StatCard Grid.Column="2" Title="当前未闭环" Value="{Binding OpenCount}" Subtitle="当前仍在推进中的事项数量" />
-                <controls:StatCard Grid.Column="3" Title="当前已逾期" Value="{Binding OverdueCount}" Subtitle="当前开放事项中已逾期的数量" />
-            </Grid>
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-            <Grid ColumnSpacing="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Background="Transparent" BorderThickness="0" Padding="0" Click="CreatedCard_Click">
+                        <controls:StatCard Title="新增事项" Value="{Binding CreatedCount}" Subtitle="所选周期内新增的事项数量" />
+                    </Button>
+                    <Button Grid.Column="1" Background="Transparent" BorderThickness="0" Padding="0" Click="CompletedCard_Click">
+                        <controls:StatCard Title="完成事项" Value="{Binding CompletedCount}" Subtitle="所选周期内已闭环完成的事项" />
+                    </Button>
+                    <Button Grid.Column="2" Background="Transparent" BorderThickness="0" Padding="0" Click="OpenCard_Click">
+                        <controls:StatCard Title="当前未闭环" Value="{Binding OpenCount}" Subtitle="当前仍在推进中的事项数量" />
+                    </Button>
+                    <Button Grid.Column="3" Background="Transparent" BorderThickness="0" Padding="0" Click="OverdueCard_Click">
+                        <controls:StatCard Title="当前已超期" Value="{Binding OverdueCount}" Subtitle="当前开放事项中已超期的数量" />
+                    </Button>
+                </Grid>
 
-                <Border Grid.Column="0" Style="{StaticResource SurfacePanelStyle}">
+                <Border Style="{StaticResource SurfacePanelStyle}">
                     <StackPanel Spacing="12">
                         <TextBlock Text="项目快照" Style="{StaticResource SectionTitleTextStyle}" />
-                        <ListView ItemsSource="{Binding ProjectSummaries}">
+                        <ListView
+                            ItemsSource="{Binding ProjectSummaries}"
+                            IsItemClickEnabled="True"
+                            ItemClick="ProjectSummaries_ItemClick"
+                            SelectionMode="None">
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="model:ProjectProgressSummary">
-                                    <Border Style="{StaticResource SurfacePanelCompactStyle}" Margin="0,0,0,10">
+                                    <Border Margin="0,0,0,10" Style="{StaticResource SurfacePanelCompactStyle}">
                                         <StackPanel Spacing="8">
                                             <TextBlock Text="{Binding ProjectName}" FontWeight="SemiBold" />
                                             <TextBlock Style="{StaticResource CaptionTextStyle}">
@@ -61,7 +71,7 @@
                                                 <Run Text="{Binding Completed}" />
                                                 <Run Text=" | 未闭环：" />
                                                 <Run Text="{Binding Open}" />
-                                                <Run Text=" | 已逾期：" />
+                                                <Run Text=" | 已超期：" />
                                                 <Run Text="{Binding Overdue}" />
                                             </TextBlock>
                                         </StackPanel>
@@ -71,64 +81,68 @@
                         </ListView>
                     </StackPanel>
                 </Border>
+            </StackPanel>
+        </ScrollViewer>
 
-                <Grid Grid.Column="1" RowSpacing="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+        <Border
+            Grid.Column="1"
+            Width="400"
+            Style="{StaticResource SurfacePanelStyle}"
+            Visibility="{Binding InspectorVisibility}">
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Style="{StaticResource SurfacePanelStyle}">
-                        <StackPanel Spacing="12">
-                            <TextBlock Text="周期内完成清单" Style="{StaticResource SectionTitleTextStyle}" />
-                            <ListView ItemsSource="{Binding CompletedTasks}" MaxHeight="280">
-                                <ListView.ItemTemplate>
-                                    <DataTemplate x:DataType="model:WorkTaskItem">
-                                        <Grid Margin="0,0,0,10">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
-                                            <TextBlock Grid.Row="1" Style="{StaticResource CaptionTextStyle}">
-                                                <Run Text="{Binding ProjectName}" />
-                                                <Run Text=" | " />
-                                                <Run Text="{Binding CompletedText}" />
-                                            </TextBlock>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                        </StackPanel>
-                    </Border>
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding InspectorTitle}" Style="{StaticResource SectionTitleTextStyle}" />
+                    <Button Grid.Column="1" Content="返回" Command="{Binding CloseInspectorCommand}" Style="{StaticResource SecondaryButtonStyle}" />
+                </Grid>
 
-                    <Border Grid.Row="1" Style="{StaticResource SurfacePanelStyle}">
-                        <StackPanel Spacing="12">
-                            <TextBlock Text="待继续跟进" Style="{StaticResource SectionTitleTextStyle}" />
-                            <ListView ItemsSource="{Binding OpenTasks}" MaxHeight="280">
-                                <ListView.ItemTemplate>
-                                    <DataTemplate x:DataType="model:WorkTaskItem">
-                                        <Grid Margin="0,0,0,10">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
-                                            <TextBlock Grid.Row="1" Style="{StaticResource CaptionTextStyle}">
-                                                <Run Text="{Binding ProjectName}" />
-                                                <Run Text=" | " />
-                                                <Run Text="{Binding StatusText}" />
-                                                <Run Text=" | " />
-                                                <Run Text="{Binding DueText}" />
-                                            </TextBlock>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                        </StackPanel>
+                <Grid Grid.Row="2">
+                    <ListView ItemsSource="{Binding InspectorTasks}" Visibility="{Binding InspectorTasksVisibility}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="model:WorkTaskItem">
+                                <Border Margin="0,0,0,10" Style="{StaticResource SurfacePanelCompactStyle}">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                        <TextBlock Style="{StaticResource CaptionTextStyle}">
+                                            <Run Text="{Binding ProjectName}" />
+                                            <Run Text=" | " />
+                                            <Run Text="{Binding StatusText}" />
+                                            <Run Text=" | " />
+                                            <Run Text="{Binding DueText}" />
+                                        </TextBlock>
+                                        <TextBlock Style="{StaticResource CaptionTextStyle}" Text="{Binding LatestProgressSummary}" />
+                                        <Button
+                                            HorizontalAlignment="Left"
+                                            Click="InspectorTaskButton_Click"
+                                            Content="进入事项清单"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Tag="{Binding}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <Border
+                        Padding="20"
+                        Background="{ThemeResource AppSurfaceAltBrush}"
+                        BorderBrush="{ThemeResource AppBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="16"
+                        Visibility="{Binding InspectorEmptyVisibility}">
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding InspectorEmptyText}" Style="{StaticResource CaptionTextStyle}" />
                     </Border>
                 </Grid>
             </Grid>
-        </StackPanel>
-    </ScrollViewer>
+        </Border>
+    </Grid>
 </Page>
