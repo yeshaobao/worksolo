@@ -23,6 +23,7 @@ public sealed class TasksViewModel : ObservableObject
     private string _newNextStepText = string.Empty;
     private bool _newNeedFollowUp = true;
     private bool _newIsKeyMilestone;
+    private bool _isSyncingProgressDraft;
 
     public TasksViewModel()
     {
@@ -209,7 +210,13 @@ public sealed class TasksViewModel : ObservableObject
     public DateTimeOffset NewProgressDate
     {
         get => _newProgressDate;
-        set => SetProperty(ref _newProgressDate, value);
+        set
+        {
+            if (SetProperty(ref _newProgressDate, value))
+            {
+                LoadProgressDraftForDate(value);
+            }
+        }
     }
 
     public string NewProgressText
@@ -350,6 +357,7 @@ public sealed class TasksViewModel : ObservableObject
 
         Editor.LoadFrom(SelectedTask);
         RefreshProgressEntries(SelectedTask);
+        LoadInitialProgressDraft(SelectedTask);
         SelectedInspectorTabIndex = openProgressSection ? 1 : 0;
         return true;
     }
@@ -366,7 +374,8 @@ public sealed class TasksViewModel : ObservableObject
 
         if (SelectedTask is not null && HasProgressDraft)
         {
-            await _state.AddTaskProgressAsync(SelectedTask.Id, new TaskProgressEntry
+            var selectedTaskId = SelectedTask.Id;
+            await _state.AddTaskProgressAsync(selectedTaskId, new TaskProgressEntry
             {
                 EntryDate = NewProgressDate,
                 ProgressText = NewProgressText,
@@ -377,10 +386,16 @@ public sealed class TasksViewModel : ObservableObject
                 CreatedAt = DateTimeOffset.Now
             });
 
-            SelectedTask = _state.FindTask(SelectedTask.Id);
+            SelectedTask = _state.FindTask(selectedTaskId);
         }
 
-        ResetProgressDraft();
+        if (SelectedTask is not null)
+        {
+            Editor.LoadFrom(SelectedTask);
+            RefreshProgressEntries(SelectedTask);
+            LoadProgressDraftForDate(NewProgressDate);
+        }
+
         SelectedInspectorTabIndex = 0;
         return true;
     }
@@ -418,8 +433,9 @@ public sealed class TasksViewModel : ObservableObject
             return;
         }
 
+        var selectedTaskId = SelectedTask.Id;
         await _state.UpdateTaskStatusAsync(SelectedTask, status);
-        SelectedTask = _state.FindTask(SelectedTask.Id);
+        SelectedTask = _state.FindTask(selectedTaskId);
     }
 
     private async Task DeleteSelectedTaskAsync()
@@ -443,7 +459,8 @@ public sealed class TasksViewModel : ObservableObject
             return;
         }
 
-        await _state.AddTaskProgressAsync(SelectedTask.Id, new TaskProgressEntry
+        var selectedTaskId = SelectedTask.Id;
+        await _state.AddTaskProgressAsync(selectedTaskId, new TaskProgressEntry
         {
             EntryDate = NewProgressDate,
             ProgressText = NewProgressText,
@@ -454,9 +471,72 @@ public sealed class TasksViewModel : ObservableObject
             CreatedAt = DateTimeOffset.Now
         });
 
-        SelectedTask = _state.FindTask(SelectedTask.Id);
+        SelectedTask = _state.FindTask(selectedTaskId);
         SelectedInspectorTabIndex = 1;
-        ResetProgressDraft();
+
+        if (SelectedTask is not null)
+        {
+            RefreshProgressEntries(SelectedTask);
+            LoadProgressDraftForDate(NewProgressDate);
+        }
+    }
+
+    public async Task DeleteProgressEntryAsync(Guid progressEntryId)
+    {
+        if (SelectedTask is null)
+        {
+            return;
+        }
+
+        var selectedTaskId = SelectedTask.Id;
+        await _state.DeleteTaskProgressAsync(selectedTaskId, progressEntryId);
+        SelectedTask = _state.FindTask(selectedTaskId);
+
+        if (SelectedTask is not null)
+        {
+            Editor.LoadFrom(SelectedTask);
+            RefreshProgressEntries(SelectedTask);
+            LoadProgressDraftForDate(NewProgressDate);
+        }
+    }
+
+    public void LoadProgressEntryForEditing(Guid progressEntryId)
+    {
+        if (SelectedTask is null)
+        {
+            return;
+        }
+
+        var existing = SelectedTask.ProgressEntries
+            .FirstOrDefault(entry => entry.Id == progressEntryId);
+
+        if (existing is null)
+        {
+            return;
+        }
+
+        LoadProgressDraft(existing);
+        SelectedInspectorTabIndex = 1;
+    }
+
+    public void EnsureProgressDraftLoaded()
+    {
+        if (SelectedTask is null)
+        {
+            return;
+        }
+
+        var today = DateTimeOffset.Now.Date;
+        if (NewProgressDate.Date != today)
+        {
+            LoadInitialProgressDraft(SelectedTask);
+            return;
+        }
+
+        if (!HasProgressDraft)
+        {
+            LoadProgressDraftForDate(today);
+        }
     }
 
     private void RefreshProgressEntries(WorkTaskItem task)
@@ -475,12 +555,63 @@ public sealed class TasksViewModel : ObservableObject
 
     private void ResetProgressDraft()
     {
+        _isSyncingProgressDraft = true;
         NewProgressDate = DateTimeOffset.Now;
         NewProgressText = string.Empty;
         NewIssueText = string.Empty;
         NewNextStepText = string.Empty;
         NewNeedFollowUp = true;
         NewIsKeyMilestone = false;
+        _isSyncingProgressDraft = false;
+        AddProgressCommand.NotifyCanExecuteChanged();
+    }
+
+    private void LoadInitialProgressDraft(WorkTaskItem task)
+    {
+        _isSyncingProgressDraft = true;
+        NewProgressDate = DateTimeOffset.Now.Date;
+        _isSyncingProgressDraft = false;
+        LoadProgressDraftForDate(NewProgressDate);
+    }
+
+    private void LoadProgressDraftForDate(DateTimeOffset date)
+    {
+        if (_isSyncingProgressDraft || SelectedTask is null)
+        {
+            return;
+        }
+
+        var existingEntry = SelectedTask.ProgressEntries
+            .Where(entry => entry.EntryDate.Date == date.Date)
+            .OrderByDescending(entry => entry.CreatedAt)
+            .FirstOrDefault();
+
+        if (existingEntry is null)
+        {
+            _isSyncingProgressDraft = true;
+            NewProgressText = string.Empty;
+            NewIssueText = string.Empty;
+            NewNextStepText = string.Empty;
+            NewNeedFollowUp = true;
+            NewIsKeyMilestone = false;
+            _isSyncingProgressDraft = false;
+            AddProgressCommand.NotifyCanExecuteChanged();
+            return;
+        }
+
+        LoadProgressDraft(existingEntry);
+    }
+
+    private void LoadProgressDraft(TaskProgressEntry entry)
+    {
+        _isSyncingProgressDraft = true;
+        NewProgressDate = entry.EntryDate;
+        NewProgressText = entry.ProgressText;
+        NewIssueText = entry.IssueText;
+        NewNextStepText = entry.NextStepText;
+        NewNeedFollowUp = entry.NeedFollowUp;
+        NewIsKeyMilestone = entry.IsKeyMilestone;
+        _isSyncingProgressDraft = false;
         AddProgressCommand.NotifyCanExecuteChanged();
     }
 

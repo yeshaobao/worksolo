@@ -116,6 +116,10 @@
 
                         <CalendarDatePicker Header="记录日期" Date="{Binding NewProgressDate, Mode=TwoWay}" />
 
+                        <TextBlock
+                            Text="同一天只保留一条进展记录，再次保存会覆盖当天内容。"
+                            Style="{StaticResource CaptionTextStyle}" />
+
                         <StackPanel Orientation="Horizontal" Spacing="18">
                             <CheckBox
                                 VerticalAlignment="Center"
@@ -164,6 +168,8 @@
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
 
                                             <TextBlock FontWeight="SemiBold" Text="{Binding EntryDateText}" />
@@ -175,6 +181,18 @@
                                                 Grid.Column="2"
                                                 Foreground="{ThemeResource AppAccentStrongBrush}"
                                                 Text="{Binding MilestoneText}" />
+                                            <Button
+                                                Grid.Column="3"
+                                                Content="编辑"
+                                                Click="EditProgressButton_Click"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Tag="{Binding}" />
+                                            <Button
+                                                Grid.Column="4"
+                                                Content="删除"
+                                                Click="DeleteProgressButton_Click"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Tag="{Binding}" />
                                         </Grid>
 
                                         <TextBlock Text="{Binding ProgressText}" TextWrapping="WrapWholeWords" />
@@ -199,18 +217,24 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <Button
                 Grid.Column="0"
-                Content="取消"
+                Content="关闭"
                 Style="{StaticResource SecondaryButtonStyle}"
                 Click="CancelButton_Click" />
             <Button
                 Grid.Column="1"
+                Content="保存"
+                Style="{StaticResource SecondaryButtonStyle}"
+                Click="SaveButton_Click" />
+            <Button
+                Grid.Column="2"
                 Content="保存并关闭"
                 Style="{StaticResource PrimaryButtonStyle}"
-                Click="SaveButton_Click" />
+                Click="SaveAndCloseButton_Click" />
         </Grid>
     </Grid>
 </Window>

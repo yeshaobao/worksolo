@@ -104,10 +104,7 @@ public sealed class StorageService
 
         Directory.CreateDirectory(BackupDirectoryPath);
 
-        var backupFilePath = Path.Combine(
-            BackupDirectoryPath,
-            $"data-{DateTimeOffset.Now:yyyyMMdd-HHmmss}.json");
-
+        var backupFilePath = BuildUniqueBackupFilePath();
         File.Copy(DataFilePath, backupFilePath, overwrite: false);
 
         var expiredBackups = new DirectoryInfo(BackupDirectoryPath)
@@ -120,6 +117,29 @@ public sealed class StorageService
         {
             expiredBackup.Delete();
         }
+    }
+
+    private string BuildUniqueBackupFilePath()
+    {
+        var timestamp = DateTimeOffset.Now;
+        var baseName = $"data-{timestamp:yyyyMMdd-HHmmss-fff}";
+        var candidatePath = Path.Combine(BackupDirectoryPath, $"{baseName}.json");
+
+        if (!File.Exists(candidatePath))
+        {
+            return candidatePath;
+        }
+
+        for (var suffix = 1; suffix < 1000; suffix++)
+        {
+            candidatePath = Path.Combine(BackupDirectoryPath, $"{baseName}-{suffix}.json");
+            if (!File.Exists(candidatePath))
+            {
+                return candidatePath;
+            }
+        }
+
+        return Path.Combine(BackupDirectoryPath, $"{baseName}-{Guid.NewGuid():N}.json");
     }
 
     private IReadOnlyList<string> BuildLegacyDataFilePaths()

@@ -31,5 +31,7 @@
 
   <ItemGroup>
     <Compile Remove="Tools\**\*.cs" />
+    <Content Remove="AppLive\**\*;release\**\*;dist\**\*;data\**\*" />
+    <None Remove="AppLive\**\*;release\**\*;dist\**\*;data\**\*" />
   </ItemGroup>
 </Project>

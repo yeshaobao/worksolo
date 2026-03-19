@@ -1,8 +1,10 @@
 using System.Runtime.InteropServices;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
 using WinRT.Interop;
+using WorkClosure.Models;
 using WorkClosure.ViewModels;
 
 namespace WorkClosure.Dialogs;
@@ -16,6 +18,12 @@ public sealed partial class TaskEditorDialog : Window
     private const uint LoadFromFile = 0x00000010;
 
     private readonly TasksViewModel _viewModel;
+    private IntPtr _hwnd;
+    private AppWindow? _appWindow;
+
+    public event EventHandler? CloseRequested;
+
+    public bool IsCloseRequested { get; private set; }
 
     public TaskEditorDialog(TasksViewModel viewModel)
     {
@@ -44,16 +52,52 @@ public sealed partial class TaskEditorDialog : Window
 
     private async void SaveButton_Click(object sender, RoutedEventArgs e)
     {
-        var saved = await _viewModel.SaveDialogAsync();
-        if (saved)
+        await _viewModel.SaveDialogAsync();
+    }
+
+    private async void SaveAndCloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
         {
-            Close();
+            var saved = await _viewModel.SaveDialogAsync();
+            if (!saved)
+            {
+                return;
+            }
+
+            await Task.Delay(120);
+            RequestClose();
         }
+        catch
+        {
+            throw;
+        }
+    }
+
+    private void EditProgressButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not TaskProgressEntry entry)
+        {
+            return;
+        }
+
+        _viewModel.LoadProgressEntryForEditing(entry.Id);
+        ProgressSectionAnchor.StartBringIntoView();
+    }
+
+    private async void DeleteProgressButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not TaskProgressEntry entry)
+        {
+            return;
+        }
+
+        await _viewModel.DeleteProgressEntryAsync(entry.Id);
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
     {
-        Close();
+        RequestClose();
     }
 
     private void OnActivated(object sender, WindowActivatedEventArgs args)
@@ -63,12 +107,12 @@ public sealed partial class TaskEditorDialog : Window
 
     private void ConfigureWindow()
     {
-        var hwnd = WindowNative.GetWindowHandle(this);
-        var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
-        var appWindow = AppWindow.GetFromWindowId(windowId);
-        appWindow.Resize(new SizeInt32(1180, 900));
+        _hwnd = WindowNative.GetWindowHandle(this);
+        var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(_hwnd);
+        _appWindow = AppWindow.GetFromWindowId(windowId);
+        _appWindow.Resize(new SizeInt32(1180, 900));
 
-        if (appWindow.Presenter is OverlappedPresenter presenter)
+        if (_appWindow.Presenter is OverlappedPresenter presenter)
         {
             presenter.IsResizable = true;
             presenter.IsMaximizable = true;
@@ -84,19 +128,52 @@ public sealed partial class TaskEditorDialog : Window
             return;
         }
 
-        var hwnd = WindowNative.GetWindowHandle(this);
         var largeIcon = LoadImage(IntPtr.Zero, iconPath, ImageIcon, 32, 32, LoadFromFile);
         var smallIcon = LoadImage(IntPtr.Zero, iconPath, ImageIcon, 16, 16, LoadFromFile);
 
         if (largeIcon != IntPtr.Zero)
         {
-            SendMessage(hwnd, WmSetIcon, (IntPtr)IconBig, largeIcon);
+            SendMessage(_hwnd, WmSetIcon, (IntPtr)IconBig, largeIcon);
         }
 
         if (smallIcon != IntPtr.Zero)
         {
-            SendMessage(hwnd, WmSetIcon, (IntPtr)IconSmall, smallIcon);
+            SendMessage(_hwnd, WmSetIcon, (IntPtr)IconSmall, smallIcon);
         }
+    }
+
+    private void RequestClose()
+    {
+        if (IsCloseRequested)
+        {
+            return;
+        }
+
+        IsCloseRequested = true;
+        CloseRequested?.Invoke(this, EventArgs.Empty);
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                if (_appWindow is not null)
+                {
+                    _appWindow.Destroy();
+                    return;
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                Close();
+            }
+            catch
+            {
+            }
+        });
     }
 
     [DllImport("user32.dll", EntryPoint = "LoadImageW", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -110,4 +187,5 @@ public sealed partial class TaskEditorDialog : Window
 
     [DllImport("user32.dll", EntryPoint = "SendMessageW", SetLastError = true)]
     private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
 }

@@ -72,19 +72,61 @@ public sealed partial class TasksPage : Page
     {
         if (_taskEditorWindow is not null)
         {
-            _taskEditorWindow.FocusCurrentSection();
-            _taskEditorWindow.Activate();
-            return;
+            if (_taskEditorWindow.IsCloseRequested)
+            {
+                DetachTaskEditorWindow(_taskEditorWindow);
+                _taskEditorWindow = null;
+            }
+            else
+            {
+                try
+                {
+                    _taskEditorWindow.FocusCurrentSection();
+                    _taskEditorWindow.Activate();
+                    return;
+                }
+                catch
+                {
+                    DetachTaskEditorWindow(_taskEditorWindow);
+                    _taskEditorWindow = null;
+                }
+            }
         }
 
         _taskEditorWindow = new TaskEditorDialog(ViewModel);
+        _taskEditorWindow.CloseRequested += TaskEditorWindow_CloseRequested;
         _taskEditorWindow.Closed += TaskEditorWindow_Closed;
         _taskEditorWindow.Activate();
         UpdateBackButtonVisibility();
     }
 
+    private void TaskEditorWindow_CloseRequested(object? sender, EventArgs e)
+    {
+        if (sender is not TaskEditorDialog dialog)
+        {
+            return;
+        }
+
+        DetachTaskEditorWindow(dialog);
+        if (ReferenceEquals(_taskEditorWindow, dialog))
+        {
+            _taskEditorWindow = null;
+        }
+    }
+
     private void TaskEditorWindow_Closed(object sender, WindowEventArgs args)
     {
+        if (sender is TaskEditorDialog dialog)
+        {
+            DetachTaskEditorWindow(dialog);
+        }
+
         _taskEditorWindow = null;
+    }
+
+    private void DetachTaskEditorWindow(TaskEditorDialog dialog)
+    {
+        dialog.CloseRequested -= TaskEditorWindow_CloseRequested;
+        dialog.Closed -= TaskEditorWindow_Closed;
     }
 }

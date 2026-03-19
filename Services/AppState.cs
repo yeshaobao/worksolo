@@ -191,17 +191,52 @@ public sealed class AppState
             return;
         }
 
-        task.ProgressEntries.Add(new TaskProgressEntry
+        var existing = task.ProgressEntries
+            .FirstOrDefault(progress => progress.EntryDate.Date == entry.EntryDate.Date);
+
+        if (existing is null)
         {
-            Id = entry.Id == Guid.Empty ? Guid.NewGuid() : entry.Id,
-            EntryDate = entry.EntryDate,
-            ProgressText = entry.ProgressText.Trim(),
-            IssueText = entry.IssueText.Trim(),
-            NextStepText = entry.NextStepText.Trim(),
-            NeedFollowUp = entry.NeedFollowUp,
-            IsKeyMilestone = entry.IsKeyMilestone,
-            CreatedAt = entry.CreatedAt == default ? DateTimeOffset.Now : entry.CreatedAt
-        });
+            task.ProgressEntries.Add(new TaskProgressEntry
+            {
+                Id = entry.Id == Guid.Empty ? Guid.NewGuid() : entry.Id,
+                EntryDate = entry.EntryDate,
+                ProgressText = entry.ProgressText.Trim(),
+                IssueText = entry.IssueText.Trim(),
+                NextStepText = entry.NextStepText.Trim(),
+                NeedFollowUp = entry.NeedFollowUp,
+                IsKeyMilestone = entry.IsKeyMilestone,
+                CreatedAt = entry.CreatedAt == default ? DateTimeOffset.Now : entry.CreatedAt
+            });
+        }
+        else
+        {
+            existing.EntryDate = entry.EntryDate;
+            existing.ProgressText = entry.ProgressText.Trim();
+            existing.IssueText = entry.IssueText.Trim();
+            existing.NextStepText = entry.NextStepText.Trim();
+            existing.NeedFollowUp = entry.NeedFollowUp;
+            existing.IsKeyMilestone = entry.IsKeyMilestone;
+        }
+
+        task.Touch();
+        await PersistAndNotifyAsync();
+    }
+
+    public async Task DeleteTaskProgressAsync(Guid taskId, Guid progressEntryId)
+    {
+        var task = FindTask(taskId);
+        if (task is null)
+        {
+            return;
+        }
+
+        var existing = task.ProgressEntries.FirstOrDefault(entry => entry.Id == progressEntryId);
+        if (existing is null)
+        {
+            return;
+        }
+
+        task.ProgressEntries.Remove(existing);
         task.Touch();
         await PersistAndNotifyAsync();
     }
