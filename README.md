@@ -4,7 +4,7 @@
 
 WorkSolo 是一个面向个人使用的 Windows 轻量桌面应用，用来记录工作事项、持续推进处理过程，并按时间和项目维度做复盘。
 
-当前仓库对应版本：`v1.1.0`
+当前仓库对应版本：`v1.1.1`
 
 ## 产品定位
 
@@ -61,7 +61,7 @@ WorkSolo 重点解决三件事：
 - 兼容旧版数据迁移
 - 自动保留最近备份
 
-## v1.1.0 重点改动
+## v1.1.1 重点改动
 
 - 工作台和总结复盘支持继续下钻到事项
 - 事项新增进展记录能力
@@ -71,17 +71,17 @@ WorkSolo 重点解决三件事：
 
 详细发布说明见：
 
-- [ReleaseNotes-v1.1.0.md](ReleaseNotes-v1.1.0.md)
+- [ReleaseNotes-v1.1.1.md](ReleaseNotes-v1.1.1.md)
 
 ## 下载使用
 
 普通使用者建议直接从 GitHub Releases 下载：
 
-- [WorkSolo V1.1.0 Release](https://github.com/yeshaobao/worksolo/releases/tag/v1.1.0)
+- [WorkSolo V1.1.1 Release](https://github.com/yeshaobao/worksolo/releases/tag/v1.1.1)
 
 发布包下载地址：
 
-- [WorkSolo-v1.1.0-windows-x64.zip](https://github.com/yeshaobao/worksolo/releases/download/v1.1.0/WorkSolo-v1.1.0-windows-x64.zip)
+- [WorkSolo-v1.1.1-windows-x64.zip](https://github.com/yeshaobao/worksolo/releases/download/v1.1.1/WorkSolo-v1.1.1-windows-x64.zip)
 
 ## 本地运行
 
@@ -135,4 +135,3 @@ bin\x64\Debug\net8.0-windows10.0.19041.0\WorkSolo.exe
 - 导出复盘结果
 - 周期性任务
 - 更完整的设置中心
-
