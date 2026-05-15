@@ -28,11 +28,27 @@ public sealed class UpdatesViewModel : ObservableObject
         [
             new ReleaseHistoryItem
             {
+                Version = "v1.1.2",
+                ReleaseDate = "2026-05-15",
+                Title = "事项清单刷新稳定性修复",
+                Summary = "修复事项清单在新建、删除或编辑事项后，项目筛选误切到“未分类”并导致部分事项不显示的问题。",
+                TagText = "当前版本"
+            },
+            new ReleaseHistoryItem
+            {
+                Version = "v1.1.1",
+                ReleaseDate = "2026-03-19",
+                Title = "事项编辑与进展记录稳定性修复",
+                Summary = "修复事项编辑窗口重开、保存并关闭、进展记录按天唯一等影响日常使用的关键流程。",
+                TagText = "稳定版本"
+            },
+            new ReleaseHistoryItem
+            {
                 Version = "v1.0.1",
                 ReleaseDate = "2026-03-16",
                 Title = "版本固化与更新中心",
                 Summary = "固化程序集版本号，新增“检查更新 / 版本历史”页面，并修复使用文档路径与版本展示。",
-                TagText = "当前版本"
+                TagText = "历史版本"
             },
             new ReleaseHistoryItem
             {
@@ -146,7 +162,7 @@ public sealed class UpdatesViewModel : ObservableObject
     private static HttpClient CreateHttpClient()
     {
         var client = new HttpClient();
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("WorkSolo/1.0.1");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("WorkSolo/1.1.2");
         return client;
     }
 

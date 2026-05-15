@@ -11,7 +11,7 @@ public sealed class TasksViewModel : ObservableObject
     private string _quickAddTitle = string.Empty;
     private string _searchText = string.Empty;
     private string _selectedScopeFilter = "all";
-    private Guid? _selectedProjectFilterId = Guid.Empty;
+    private string _selectedProjectFilterValue = ProjectOption.AllFilterValue;
     private IReadOnlyList<ProjectOption> _projectFilters = [];
     private IReadOnlyList<WorkTaskItem> _filteredTasks = [];
     private WorkTaskItem? _selectedTask;
@@ -101,12 +101,13 @@ public sealed class TasksViewModel : ObservableObject
         }
     }
 
-    public Guid? SelectedProjectFilterId
+    public string SelectedProjectFilterValue
     {
-        get => _selectedProjectFilterId;
+        get => _selectedProjectFilterValue;
         set
         {
-            if (SetProperty(ref _selectedProjectFilterId, value))
+            var normalizedValue = ProjectOption.NormalizeFilterValue(value);
+            if (SetProperty(ref _selectedProjectFilterValue, normalizedValue))
             {
                 Refresh();
             }
@@ -311,16 +312,16 @@ public sealed class TasksViewModel : ObservableObject
             _ => query
         };
 
-        if (SelectedProjectFilterId == Guid.Empty)
+        if (SelectedProjectFilterValue == ProjectOption.AllFilterValue)
         {
         }
-        else if (SelectedProjectFilterId.HasValue)
-        {
-            query = query.Where(task => task.ProjectId == SelectedProjectFilterId);
-        }
-        else
+        else if (SelectedProjectFilterValue == ProjectOption.UncategorizedFilterValue)
         {
             query = query.Where(task => task.ProjectId is null);
+        }
+        else if (ProjectOption.TryGetProjectId(SelectedProjectFilterValue, out var selectedProjectId))
+        {
+            query = query.Where(task => task.ProjectId == selectedProjectId);
         }
 
         FilteredTasks = query
@@ -624,7 +625,9 @@ public sealed class TasksViewModel : ObservableObject
         }
 
         SelectedScopeFilter = request.ScopeFilter;
-        SelectedProjectFilterId = request.ApplyProjectFilter ? request.ProjectId : Guid.Empty;
+        SelectedProjectFilterValue = request.ApplyProjectFilter
+            ? ProjectOption.ToFilterValue(request.ProjectId)
+            : ProjectOption.AllFilterValue;
 
         if (request.TaskId.HasValue)
         {

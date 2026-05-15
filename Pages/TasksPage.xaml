@@ -81,8 +81,8 @@
                         DisplayMemberPath="Name"
                         ItemsSource="{Binding ProjectFilters}"
                         PlaceholderText="项目"
-                        SelectedValuePath="Id"
-                        SelectedValue="{Binding SelectedProjectFilterId, Mode=TwoWay}" />
+                        SelectedValuePath="FilterValue"
+                        SelectedValue="{Binding SelectedProjectFilterValue, Mode=TwoWay}" />
                 </Grid>
             </StackPanel>
         </Border>
